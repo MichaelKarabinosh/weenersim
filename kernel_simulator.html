@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weener Sim</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --glass-bg: rgba(255,255,255,0.72);
+    --glass-bg-deep: rgba(255,255,255,0.55);
+    --glass-border: rgba(255,255,255,0.9);
+    --glass-border-soft: rgba(200,200,210,0.45);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.07);
+    --shadow-sm: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(0,0,0,0.04);
+    --text-primary: #1a1a1e;
+    --text-secondary: #6e6e7a;
+    --text-tertiary: #ababba;
+    --accent: #0071e3;
+    --accent-soft: rgba(0,113,227,0.1);
+    --accent-glow: rgba(0,113,227,0.25);
+    --green: #30d158;
+    --green-soft: rgba(48,209,88,0.12);
+    --orange: #c8680a;
+    --orange-soft: rgba(255,159,10,0.12);
+    --red: #ff453a;
+    --bg-page: #f0f2f7;
+    --radius-lg: 20px;
+    --radius-md: 13px;
+    --radius-sm: 9px;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  body {
+    font-family: var(--sans);
+    background: var(--bg-page);
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(180,200,255,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 90%, rgba(200,180,255,0.2) 0%, transparent 60%);
+    min-height: 100vh;
+    color: var(--text-primary);
+    padding: 2rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-header { margin-bottom: 1.75rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+  .page-title { font-size: 1.5rem; font-weight: 500; letter-spacing: -0.025em; color: var(--text-primary); margin-bottom: 3px; }
+  .page-sub { font-size: 0.78rem; color: var(--text-secondary); font-family: var(--mono); font-weight: 300; }
+  .card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(32px) saturate(1.8);
+    -webkit-backdrop-filter: blur(32px) saturate(1.8);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .main-layout { display: grid; grid-template-columns: auto 1fr; gap: 2.25rem; align-items: start; }
+  .panel-label { font-size: 0.67rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.75rem; }
+
+  /* kernel grid */
+  .kernel-grid { display: grid; grid-template-columns: repeat(5, 48px); gap: 5px; }
+  .kc {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-soft);
+    background: rgba(255,255,255,0.5);
+    box-shadow: var(--shadow-inset), var(--shadow-sm);
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: background 0.14s, border-color 0.14s, transform 0.1s, box-shadow 0.14s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .kc:not(.cx):hover { background: rgba(255,255,255,0.88); border-color: rgba(0,113,227,0.3); transform: scale(1.04); }
+  .kc:not(.cx):active { transform: scale(0.95); }
+  .kc.on {
+    background: var(--accent-soft);
+    border-color: rgba(0,113,227,0.45);
+    box-shadow: var(--shadow-inset), 0 0 0 3px var(--accent-glow);
+  }
+  .kc.on .coord { color: var(--accent); }
+  .kc.cx { background: rgba(255,255,255,0.25); border-color: rgba(200,200,210,0.25); cursor: default; }
+  .kc.cx .coord { font-size: 8px; color: var(--text-tertiary); letter-spacing: 0.02em; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-bottom: 3px; opacity: 0; transition: opacity 0.14s; pointer-events: none; }
+  .kc.on .dot { opacity: 1; }
+  .coord { font-family: var(--mono); font-size: 9px; color: var(--text-tertiary); pointer-events: none; line-height: 1; }
+
+  /* controls */
+  .controls { display: flex; gap: 8px; margin-top: 1rem; }
+  .btn { font-family: var(--sans); font-size: 0.82rem; font-weight: 500; padding: 9px 20px; border-radius: 99px; border: none; cursor: pointer; transition: all 0.14s; -webkit-tap-highlight-color: transparent; letter-spacing: -0.01em; }
+  .btn-ghost { background: rgba(0,0,0,0.06); color: var(--text-secondary); }
+  .btn-ghost:hover { background: rgba(0,0,0,0.1); }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 12px var(--accent-glow); }
+  .btn-primary:hover { background: #0077ed; transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* abc metrics */
+  .abc-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.1rem; }
+  .metric {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--glass-border-soft);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow-sm), var(--shadow-inset);
+    position: relative; overflow: hidden;
+  }
+  .metric::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .metric.lit::after { transform: scaleX(1); }
+  .metric-lbl { font-family: var(--mono); font-size: 0.64rem; font-weight: 500; letter-spacing: 0.05em; color: var(--text-tertiary); margin-bottom: 5px; }
+  .metric-val { font-family: var(--mono); font-size: 1.6rem; font-weight: 400; color: var(--text-primary); letter-spacing: -0.02em; transition: color 0.2s; }
+  .metric-val.is-frac { color: var(--orange); }
+  .metric-val.is-zero { color: var(--text-tertiary); }
+  .metric-val.is-dash { color: var(--text-tertiary); font-size: 1.2rem; }
+
+  /* tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.9rem; }
+  .tag { font-family: var(--mono); font-size: 0.67rem; padding: 4px 11px; border-radius: 99px; background: rgba(0,0,0,0.05); color: var(--text-secondary); border: 1px solid transparent; }
+  .tag-good  { background: var(--green-soft);  color: #1a7a38; border-color: rgba(48,209,88,0.25); }
+  .tag-warn  { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,159,10,0.3); }
+  .tag-alert { background: rgba(255,69,58,0.1); color: var(--red); border-color: rgba(255,69,58,0.3); font-weight: 500; }
+  .tag-info  { background: var(--accent-soft); color: var(--accent); border-color: rgba(0,113,227,0.25); }
+
+  .status { font-family: var(--mono); font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 0.9rem; min-height: 1rem; }
+
+  .seq-box { background: rgba(255,255,255,0.42); border: 1px solid var(--glass-border-soft); border-radius: var(--radius-md); padding: 0.875rem 1rem; margin-bottom: 8px; box-shadow: var(--shadow-inset); }
+  .seq-lbl { font-family: var(--mono); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 5px; }
+  .seq-val { font-family: var(--mono); font-size: 0.75rem; color: var(--text-secondary); line-height: 1.75; word-break: break-all; }
+
+  .formula-box { background: linear-gradient(135deg, rgba(0,113,227,0.07), rgba(0,113,227,0.03)); border: 1px solid rgba(0,113,227,0.18); border-radius: var(--radius-md); padding: 0.875rem 1rem; margin-top: 8px; display: none; }
+  .formula-box.show { display: block; }
+  .formula-lbl { font-family: var(--mono); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(0,113,227,0.55); margin-bottom: 5px; }
+  .formula-val { font-family: var(--mono); font-size: 0.88rem; color: var(--accent); }
+
+  .divider { height: 1px; background: var(--glass-border-soft); margin: 1.5rem 0; }
+
+  .presets-label { font-size: 0.67rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.75rem; }
+  .preset-row { display: flex; flex-wrap: wrap; gap: 7px; }
+  .preset-btn {
+    font-family: var(--sans); font-size: 0.78rem; font-weight: 400; padding: 7px 15px; border-radius: 99px;
+    border: 1px solid var(--glass-border-soft); background: rgba(255,255,255,0.6); color: var(--text-secondary);
+    cursor: pointer; transition: all 0.14s; box-shadow: var(--shadow-sm); -webkit-tap-highlight-color: transparent;
+  }
+  .preset-btn:hover { background: rgba(255,255,255,0.92); border-color: rgba(0,113,227,0.3); color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+  @media (max-width: 640px) {
+    body { padding: 1rem; }
+    .main-layout { grid-template-columns: 1fr; }
+    .kernel-grid { grid-template-columns: repeat(5, 44px); }
+    .kc { width: 44px; height: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">Weener Sim</div>
+  <div class="page-sub">W(n) = an² + bn + c</div>
+</div>
+
+<div class="card">
+  <div class="main-layout">
+    <div class="left-panel">
+      <div class="panel-label">Vectors</div>
+      <div class="kernel-grid" id="kg"></div>
+      <div class="controls">
+        <button class="btn btn-ghost" onclick="reset()">Clear</button>
+        <button class="btn btn-ghost" id="rndBtn">✦ Random</button>
+        <button class="btn btn-primary" onclick="go()">Run</button>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="abc-row">
+        <div class="metric" id="ma"><div class="metric-lbl">a</div><div class="metric-val is-dash" id="va">—</div></div>
+        <div class="metric" id="mb"><div class="metric-lbl">b</div><div class="metric-val is-dash" id="vb">—</div></div>
+        <div class="metric" id="mc"><div class="metric-lbl">c</div><div class="metric-val is-dash" id="vc">—</div></div>
+      </div>
+      <div class="tags" id="tags"></div>
+      <div class="status" id="st"></div>
+      <div class="seq-box"><div class="seq-lbl">Counts</div><div class="seq-val" id="seq">Run the simulator to see growth counts</div></div>
+      <div class="seq-box"><div class="seq-lbl">Second differences</div><div class="seq-val" id="d2">—</div></div>
+      <div class="formula-box" id="fbox"><div class="formula-lbl">Fitted formula</div><div class="formula-val" id="fval"></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="presets-label">Presets</div>
+  <div class="preset-row" id="presets"></div>
+</div>
+
+<script>
+// ── Exact rational arithmetic ─────────────────────────────────────────────
+function igcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t;}return a||1;}
+class Q{
+  constructor(n,d=1){if(d<0){n=-n;d=-d;}const g=igcd(Math.abs(n),d);this.n=n/g;this.d=d/g;}
+  add(q){return new Q(this.n*q.d+q.n*this.d,this.d*q.d);}
+  sub(q){return new Q(this.n*q.d-q.n*this.d,this.d*q.d);}
+  mul(q){return new Q(this.n*q.n,this.d*q.d);}
+  isInt(){return this.d===1;}
+  toFloat(){return this.n/this.d;}
+  toString(){return this.d===1?`${this.n}`:`${this.n}/${this.d}`;}
+}
+const QI=n=>new Q(Math.round(n));
+
+// ── Grid setup ────────────────────────────────────────────────────────────
+const N=5,C=2;
+let cells=Array(25).fill(false); // source of truth
+const kg=document.getElementById('kg');
+const cellEls=[];
+
+for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+  const cx=r===C&&c===C;
+  const el=document.createElement('div');
+  el.className='kc'+(cx?' cx':'');
+  const dot=document.createElement('div'); dot.className='dot';
+  const coord=document.createElement('div'); coord.className='coord';
+  coord.textContent=cx?'0,0':`${r-C},${c-C}`;
+  el.appendChild(dot); el.appendChild(coord);
+  if(!cx){
+    const i=r*N+c;
+    el.addEventListener('click',()=>{
+      cells[i]=!cells[i];               // toggle truth first
+      el.className='kc'+(cells[i]?' on':'');  // reflect it immediately
+    });
+  }
+  kg.appendChild(el);
+  cellEls.push(el);
+}
+
+// ── Geometry ──────────────────────────────────────────────────────────────
+function gcdArr(a){return a.reduce((x,y)=>igcd(x,y),0);}
+function det2(v,w){return v[0]*w[1]-v[1]*w[0];}
+function convexHull(pts){
+  if(pts.length<2)return pts;
+  const p=[...pts].sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[],hi=[];
+  for(const q of p){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop();lo.push(q);}
+  for(let i=p.length-1;i>=0;i--){const q=p[i];while(hi.length>=2&&cr(hi[hi.length-2],hi[hi.length-1],q)<=0)hi.pop();hi.push(q);}
+  hi.pop();lo.pop();return lo.concat(hi);
+}
+function shoelace(pts){let s=0,n=pts.length;for(let i=0;i<n;i++){const j=(i+1)%n;s+=pts[i][0]*pts[j][1]-pts[j][0]*pts[i][1];}return Math.abs(s);}
+
+// ── Simulation (bitset on Int32Array — ~20x faster than Set<string>) ──────
+// Strategy: allocate a flat grid large enough to hold all reachable cells
+// after `steps` expansions. Each cell is one bit in an Int32Array.
+// We keep two buffers (ping-pong) and XOR/OR to expand.
+function simulate(vecs, steps) {
+  // Bounding box growth per step: max |dr|, max |dc|
+  const maxDR = Math.max(...vecs.map(v => Math.abs(v[0])));
+  const maxDC = Math.max(...vecs.map(v => Math.abs(v[1])));
+  // After `steps` expansions from origin, we need radius steps*max in each axis
+  const R = steps * maxDR + 2;
+  const C2 = steps * maxDC + 2;
+  const W = 2 * C2 + 1; // grid width (columns)
+  const H = 2 * R + 1;  // grid height (rows)
+  const WORDS = Math.ceil(W / 32);
+
+  // Allocate two row-major bitset grids
+  const cur = new Int32Array(H * WORDS);
+  const nxt = new Int32Array(H * WORDS);
+
+  function setBit(grid, row, col) {
+    const c = col + C2; // shift to non-negative
+    grid[row * WORDS + (c >> 5)] |= (1 << (c & 31));
+  }
+  function getBit(grid, row, col) {
+    const c = col + C2;
+    return (grid[row * WORDS + (c >> 5)] >> (c & 31)) & 1;
+  }
+  function countBits(grid) {
+    let n = 0;
+    for (let i = 0; i < grid.length; i++) {
+      let v = grid[i] >>> 0;
+      v = v - ((v >> 1) & 0x55555555);
+      v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+      v = (v + (v >> 4)) & 0x0f0f0f0f;
+      n += (v * 0x01010101) >>> 24;
+    }
+    return n;
+  }
+
+  // Seed origin
+  setBit(cur, R, 0); // row R = row for y=0, col 0 = x=0
+  const counts = [1];
+
+  for (let s = 0; s < steps - 1; s++) {
+    nxt.fill(0);
+    // Copy current into next first
+    for (let i = 0; i < cur.length; i++) nxt[i] = cur[i];
+    // For each vector, shift the entire bitset and OR into nxt
+    for (const [dr, dc] of vecs) {
+      if (dr === 0 && dc === 0) continue;
+      for (let row = 0; row < H; row++) {
+        const srcRow = row - dr;
+        if (srcRow < 0 || srcRow >= H) continue;
+        const base = srcRow * WORDS;
+        const dstBase = row * WORDS;
+        if (dc === 0) {
+          for (let w = 0; w < WORDS; w++) nxt[dstBase + w] |= cur[base + w];
+        } else if (dc > 0) {
+          // shift left by dc bits
+          const wshift = dc >> 5, bshift = dc & 31;
+          if (bshift === 0) {
+            for (let w = WORDS - 1; w >= wshift; w--) nxt[dstBase + w] |= cur[base + w - wshift];
+          } else {
+            for (let w = WORDS - 1; w > wshift; w--) nxt[dstBase + w] |= (cur[base + w - wshift] << bshift) | (cur[base + w - wshift - 1] >>> (32 - bshift));
+            nxt[dstBase + wshift] |= cur[base] << bshift;
+          }
+        } else {
+          // shift right by -dc bits
+          const adc = -dc;
+          const wshift = adc >> 5, bshift = adc & 31;
+          if (bshift === 0) {
+            for (let w = 0; w < WORDS - wshift; w++) nxt[dstBase + w] |= cur[base + w + wshift];
+          } else {
+            for (let w = 0; w < WORDS - wshift - 1; w++) nxt[dstBase + w] |= (cur[base + w + wshift] >>> bshift) | (cur[base + w + wshift + 1] << (32 - bshift));
+            nxt[dstBase + WORDS - wshift - 1] |= cur[base + WORDS - 1] >>> bshift;
+          }
+        }
+      }
+    }
+    cur.set(nxt);
+    counts.push(countBits(cur));
+  }
+  return counts;
+}
+
+// ── Fit quadratic (exact rationals) ──────────────────────────────────────
+function fitQuadratic(counts){
+  const d1=counts.slice(1).map((v,i)=>v-counts[i]);
+  const d2=d1.slice(1).map((v,i)=>v-d1[i]);
+  for(let i=0;i<=d2.length-8;i++){
+    const val=d2[i];
+    if(d2.slice(i,i+8).every(v=>Math.abs(v-val)<0.5)){
+      const n=i+2;
+      const a=new Q(Math.round(val),2);
+      const b=new Q(d1[n-1]).sub(a.mul(QI(2*n-1)));
+      const c=new Q(counts[n]).sub(a.mul(QI(n*n))).sub(b.mul(QI(n)));
+      return{a,b,c,stableAt:n,d2};
+    }
+  }
+  if(d2.every(v=>Math.abs(v)<0.5)){
+    const sl=d1[d1.length-1];
+    return{a:QI(0),b:QI(sl),c:QI(counts[0]-sl),stableAt:1,d2,linear:true};
+  }
+  return null;
+}
+
+// ── Main run ──────────────────────────────────────────────────────────────
+function go(){
+  const vecs=[[0,0]];
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(cells[r*N+c])vecs.push([r-C,c-C]);
+  const w=vecs.length-1;
+  const dets=[];
+  for(let i=1;i<vecs.length;i++)for(let j=i+1;j<vecs.length;j++)dets.push(Math.abs(det2(vecs[i],vecs[j])));
+  const g=dets.length?gcdArr(dets):0;
+  const h=vecs.length>=3?convexHull(vecs):vecs;
+  const area2=h.length>=3?shoelace(h):0;
+
+  document.getElementById('st').textContent='computing…';
+
+  setTimeout(()=>{
+    const counts=simulate(vecs,80);
+    document.getElementById('seq').textContent=counts.slice(0,16).join(', ')+' …';
+    const result=fitQuadratic(counts);
+    const d2disp=(result?.d2||[]).slice(0,16).map(v=>QI(Math.round(v)).toString()).join(', ')+' …';
+    document.getElementById('d2').textContent=d2disp;
+
+    const tags=document.getElementById('tags');
+    const prick = g>0 ? new Q(area2, 2*g).toString() : '0';
+    tags.innerHTML=`<span class="tag">w = ${w}</span><span class="tag">g = ${g}</span><span class="tag">erea = ${area2}</span><span class="tag">prick = ${prick}</span>`;
+
+    function setMetric(mid,vid,q){
+      document.getElementById(mid).classList.add('lit');
+      const vel=document.getElementById(vid);
+      vel.textContent=q.toString();
+      vel.className='metric-val'+((!q.isInt())?' is-frac':(q.toFloat()===0?' is-zero':''));
+    }
+
+    if(!result){
+      ['va','vb','vc'].forEach(id=>{const e=document.getElementById(id);e.textContent='?';e.className='metric-val is-dash';});
+      document.getElementById('st').textContent='did not stabilize in 80 steps';
+      document.getElementById('fbox').classList.remove('show');
+      tags.innerHTML+=`<span class="tag tag-warn">unstable</span>`;
+      return;
+    }
+
+    const{a,b,c,stableAt,linear}=result;
+    setMetric('ma','va',a);
+    setMetric('mb','vb',b);
+    setMetric('mc','vc',c);
+    document.getElementById('st').textContent=linear?'linear growth (a = 0)':`stabilized at n = ${stableAt}`;
+
+    function term(q,v){
+      if(q.toFloat()===0)return'';
+      const s=q.toString();
+      if(!v)return s;
+      if(s==='1')return v; if(s==='-1')return'-'+v;
+      return`${s}${v}`;
+    }
+    const parts=[term(a,'n²'),term(b,'n'),term(c,'')].filter(Boolean);
+    document.getElementById('fval').textContent=parts.length?`W(n) = ${parts.join(' + ').replace(/\+ -/g,'− ')}`:'W(n) = 0';
+    document.getElementById('fbox').classList.add('show');
+
+    const aInt=a.isInt(),bInt=b.isInt();
+    if(linear) tags.innerHTML+=`<span class="tag tag-info">linear</span>`;
+    else if(aInt&&!bInt) tags.innerHTML+=`<span class="tag tag-alert">⚑ a integer, b fractional</span>`;
+    else if(!bInt) tags.innerHTML+=`<span class="tag tag-warn">b fractional</span>`;
+    else tags.innerHTML+=`<span class="tag tag-good">a, b both integer</span>`;
+  },10);
+}
+
+function reset(){
+  cells.fill(false);
+  cellEls.forEach((el,i)=>{ if(!el.classList.contains('cx')) el.className='kc'; });
+  ['va','vb','vc'].forEach(id=>{const e=document.getElementById(id);e.textContent='—';e.className='metric-val is-dash';});
+  ['ma','mb','mc'].forEach(id=>document.getElementById(id).classList.remove('lit'));
+  document.getElementById('tags').innerHTML='';
+  document.getElementById('st').textContent='';
+  document.getElementById('seq').textContent='Run the simulator to see growth counts';
+  document.getElementById('d2').textContent='—';
+  document.getElementById('fbox').classList.remove('show');
+}
+
+// ── Random button (in controls row) ──────────────────────────────────────
+document.getElementById('rndBtn').addEventListener('click',()=>{
+  reset();
+  const nonCenter=[];
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!(r===C&&c===C))nonCenter.push(r*N+c);
+  for(let i=nonCenter.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nonCenter[i],nonCenter[j]]=[nonCenter[j],nonCenter[i]];}
+  const count=2+Math.floor(Math.random()*4);
+  for(let k=0;k<count;k++){const i=nonCenter[k];cells[i]=true;cellEls[i].className='kc on';}
+  go();
+});
+
+// ── Presets ───────────────────────────────────────────────────────────────
+const PRESETS=[
+  {name:'w=1 axis',      offsets:[[0,1]]},
+  {name:'w=2 diagonal',  offsets:[[-1,-1],[1,1]]},
+  {name:'w=2 L-shape',   offsets:[[-2,0],[0,1]]},
+  {name:'w=3 triangle',  offsets:[[-2,-2],[0,1],[2,-1]]},
+  {name:'w=3 skew',      offsets:[[-2,1],[1,2],[-1,-2]]},
+  {name:'w=4 box',       offsets:[[-2,-2],[2,-2],[-2,2],[2,2]]},
+];
+const pr=document.getElementById('presets');
+for(const p of PRESETS){
+  const btn=document.createElement('button');
+  btn.className='preset-btn';
+  btn.textContent=p.name;
+  btn.addEventListener('click',()=>{
+    reset();
+    for(const[dr,dc]of p.offsets){
+      const r=dr+C,c=dc+C;
+      if(r>=0&&r<N&&c>=0&&c<N){const i=r*N+c;cells[i]=true;cellEls[i].className='kc on';}
+    }
+    go();
+  });
+  pr.appendChild(btn);
+}
+</script>
+</body>
+</html>
