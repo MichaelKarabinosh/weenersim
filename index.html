@@ -378,7 +378,7 @@ function go(){
 
     const tags=document.getElementById('tags');
     const prick = g>0 ? new Q(area2, 2*g).toString() : '0';
-    tags.innerHTML=`<span class="tag">w = ${w}</span><span class="tag">g = ${g}</span><span class="tag">erea = ${area2}</span><span class="tag">prick = ${prick}</span>`;
+    tags.innerHTML=`<span class="tag">w = ${w}</span><span class="tag">prick = ${g}</span><span class="tag">erea = ${area2}</span>`;
 
     function setMetric(mid,vid,q){
       document.getElementById(mid).classList.add('lit');
