@@ -221,6 +221,10 @@
     cursor: pointer; transition: all 0.14s; box-shadow: var(--shadow-sm);
   }
   .btn-save-lib:hover { border-color: rgba(0,113,227,0.3); color: var(--accent); background: rgba(255,255,255,0.9); }
+  .lib-sync-status { font-family: var(--mono); font-size: 0.6rem; color: var(--text-tertiary); transition: color 0.2s; }
+  .lib-sync-status.syncing { color: var(--orange); }
+  .lib-sync-status.synced  { color: var(--green); }
+  .lib-sync-status.error   { color: var(--red); }
 
   /* folders */
   .folders { display: flex; flex-direction: column; gap: 4px; }
@@ -410,7 +414,10 @@
   <div class="divider"></div>
   <div class="library-header">
     <span class="library-label">Library</span>
-    <button class="btn-save-lib" id="saveLibBtn">+ Save current</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="lib-sync-status" id="libSyncStatus"></span>
+      <button class="btn-save-lib" id="saveLibBtn">+ Save current</button>
+    </div>
   </div>
   <div class="folders" id="folders"></div>
 </div>
@@ -873,18 +880,67 @@ const DEFAULT_LIBRARY = [
   },
 ];
 
-function loadLibraryData() {
+// ── JSONBin config — fill these in ───────────────────────────────────────
+const JSONBIN_BIN_ID  = '69f195e7856a68218985df3d';   // e.g. '6634a1f2acd3cb34a836f123'
+const JSONBIN_API_KEY = '$2a$10$1Dh.OakYsR5h6Lm0hUIHguqjA3pb2gEcjPISUhNIdqQQ4Eb/dEHl.';  // e.g. '$2a$10$abc...'
+const JSONBIN_URL     = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const JSONBIN_HEADERS = { 'X-Master-Key': JSONBIN_API_KEY, 'Content-Type': 'application/json' };
+
+const syncEl = () => document.getElementById('libSyncStatus');
+function setSyncStatus(state, msg) {
+  const el = syncEl(); if (!el) return;
+  el.className = 'lib-sync-status ' + state;
+  el.textContent = msg;
+  if (state === 'synced') setTimeout(() => { el.textContent = ''; el.className = 'lib-sync-status'; }, 2000);
+}
+
+const CONFIGURED = JSONBIN_BIN_ID !== 'YOUR_BIN_ID' && JSONBIN_API_KEY !== 'YOUR_API_KEY';
+
+async function loadLibraryData() {
+  // always load localStorage first as fast fallback
+  let local;
+  try { local = JSON.parse(localStorage.getItem('weed_library')); } catch {}
+  if (!CONFIGURED) return local || JSON.parse(JSON.stringify(DEFAULT_LIBRARY));
+
   try {
-    const stored = localStorage.getItem('weed_library');
-    return stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_LIBRARY));
-  } catch { return JSON.parse(JSON.stringify(DEFAULT_LIBRARY)); }
+    setSyncStatus('syncing', '↓ syncing…');
+    const res = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
+    if (!res.ok) throw new Error(res.status);
+    const json = await res.json();
+    const data = json.record;
+    localStorage.setItem('weed_library', JSON.stringify(data));
+    setSyncStatus('synced', '✓ synced');
+    return data;
+  } catch (e) {
+    setSyncStatus('error', '⚠ offline');
+    return local || JSON.parse(JSON.stringify(DEFAULT_LIBRARY));
+  }
 }
 
-function saveLibraryData(data) {
-  try { localStorage.setItem('weed_library', JSON.stringify(data)); } catch {}
+async function saveLibraryData(data) {
+  localStorage.setItem('weed_library', JSON.stringify(data));
+  if (!CONFIGURED) return;
+  try {
+    setSyncStatus('syncing', '↑ saving…');
+    const res = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: JSONBIN_HEADERS,
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(res.status);
+    setSyncStatus('synced', '✓ saved');
+  } catch {
+    setSyncStatus('error', '⚠ save failed');
+  }
 }
 
-let libraryData = loadLibraryData();
+let libraryData = JSON.parse(JSON.stringify(DEFAULT_LIBRARY));
+
+// load async then re-render
+loadLibraryData().then(data => {
+  libraryData = data;
+  renderLibrary();
+});
 
 function makePreview(offsets, W=80, H=60) {
   const GN = 5, GC = 2;
@@ -993,6 +1049,7 @@ function renderLibrary() {
         // second click: actually delete
         pendingDelete = false;
         libraryData[folderIdx].items.splice(itemIdx, 1);
+        saveLibraryData(libraryData);  // async, fire and forget
         saveLibraryData(libraryData);
         renderLibrary();
         // reopen the folder
