@@ -150,6 +150,47 @@
   }
   .preset-btn:hover { background: rgba(255,255,255,0.92); border-color: rgba(0,113,227,0.3); color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
+  /* import panel */
+  .import-wrap { margin-top: 0.9rem; }
+  .import-row { display: flex; gap: 6px; align-items: center; }
+  .import-input {
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 300;
+    flex: 1; padding: 7px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-soft);
+    background: rgba(255,255,255,0.5);
+    box-shadow: var(--shadow-inset);
+    color: var(--text-primary); outline: none;
+    transition: border-color 0.14s;
+    min-width: 0;
+  }
+  .import-input::placeholder { color: var(--text-tertiary); }
+  .import-input:focus { border-color: rgba(0,113,227,0.4); background: rgba(255,255,255,0.8); }
+  .import-input.err { border-color: var(--red); }
+  .import-hint { font-family: var(--mono); font-size: 0.6rem; color: var(--text-tertiary); margin-top: 4px; line-height: 1.5; }
+  .btn-import { font-family: var(--sans); font-size: 0.75rem; font-weight: 500; padding: 7px 13px; border-radius: 99px; border: 1px solid var(--glass-border-soft); background: rgba(255,255,255,0.6); color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.14s; box-shadow: var(--shadow-sm); flex-shrink: 0; }
+  .btn-import:hover { border-color: rgba(0,113,227,0.3); color: var(--accent); background: rgba(255,255,255,0.9); }
+
+  /* random count slider */
+  .rnd-count-wrap { display: flex; align-items: center; gap: 8px; margin-top: 0.6rem; }
+  .rnd-count-label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-tertiary); white-space: nowrap; }
+  .rnd-count-label b { color: var(--accent); font-weight: 500; }
+  .rnd-slider {
+    -webkit-appearance: none; appearance: none;
+    flex: 1; height: 3px; border-radius: 99px;
+    background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--pct,17%), rgba(0,0,0,0.1) var(--pct,17%));
+    outline: none; cursor: pointer;
+  }
+  .rnd-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+    box-shadow: 0 1px 5px rgba(0,113,227,0.3); cursor: pointer;
+  }
+  .rnd-slider::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+    box-shadow: 0 1px 5px rgba(0,113,227,0.3); cursor: pointer; border: none;
+  }
+
   /* size toggle */
   .size-toggle-wrap { display: flex; align-items: center; gap: 9px; margin-top: 1rem; }
   .toggle-label { font-family: var(--mono); font-size: 0.7rem; color: var(--text-tertiary); }
@@ -196,8 +237,25 @@
       <div class="kernel-grid" id="kg"></div>
       <div class="controls">
         <button class="btn btn-ghost" onclick="reset()">Clear</button>
-        <button class="btn btn-ghost" id="rndBtn">✦ Random</button>
+        <div class="rnd-wrap" id="rndWrap">
+          <button class="btn btn-ghost" id="rndBtn">✦ Random</button>
+        </div>
         <button class="btn btn-primary" onclick="go()">Run</button>
+      </div>
+      <div class="rnd-count-wrap">
+        <span class="rnd-count-label">weens&nbsp;<b id="rndCountLabel">3</b></span>
+        <input class="rnd-slider" id="rndSlider" type="range" min="1" max="12" value="3">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="rndAny" style="accent-color:var(--accent);cursor:pointer">
+          <span style="font-family:var(--mono);font-size:0.65rem;color:var(--text-tertiary)">any</span>
+        </label>
+      </div>
+      <div class="import-wrap">
+        <div class="import-row">
+          <input class="import-input" id="importInput" placeholder="11011,11W11,00100 or 1,2 -1,1 2,-2" spellcheck="false">
+          <button class="btn-import" id="importBtn">Import</button>
+        </div>
+        <div class="import-hint" id="importHint"></div>
       </div>
       <div class="size-toggle-wrap">
         <span class="toggle-label" id="lbl5x5">5×5</span>
@@ -486,16 +544,127 @@ function reset(){
   document.getElementById('fbox').classList.remove('show');
 }
 
-// ── Random button (in controls row) ──────────────────────────────────────
-document.getElementById('rndBtn').addEventListener('click',()=>{
+// ── Import parser ─────────────────────────────────────────────────────────
+function parseImport(raw) {
+  // Returns array of [x,y] coords (relative to center) or null on failure
+  const s = raw.trim();
+  if (!s) return null;
+
+  // ── Mode 1: grid string  e.g. "11011,11W11,00100"
+  // rows separated by commas or newlines; W marks origin
+  if (/[01W]/.test(s) && /[,\n]/.test(s)) {
+    const rows = s.split(/[,\n]/).map(r => r.trim()).filter(Boolean);
+    // find W to determine origin row/col
+    let oR = -1, oC = -1;
+    for (let r = 0; r < rows.length; r++) {
+      const wc = rows[r].indexOf('W');
+      if (wc !== -1) { oR = r; oC = wc; break; }
+    }
+    if (oR === -1) {
+      // no W — use centre of grid
+      oR = Math.floor(rows.length / 2);
+      oC = Math.floor((rows[0]?.length || 1) / 2);
+    }
+    const pts = [];
+    for (let r = 0; r < rows.length; r++) {
+      for (let ci = 0; ci < rows[r].length; ci++) {
+        const ch = rows[r][ci];
+        if (ch === '1') pts.push([ci - oC, oR - r]); // x right, y up
+      }
+    }
+    return pts.length ? pts : null;
+  }
+
+  // ── Mode 2: coord list  e.g. "1,2 -1,1 2,-2" or "1 2, -1 1"
+  // each pair is x y separated by comma or space; pairs separated by spaces/semicolons
+  const tokens = s.split(/[\s;]+/).filter(Boolean);
+  const pts = [];
+  for (let i = 0; i < tokens.length; i++) {
+    // try splitting token on comma
+    let parts = tokens[i].split(',');
+    if (parts.length === 2) {
+      const x = parseInt(parts[0], 10), y = parseInt(parts[1], 10);
+      if (!isNaN(x) && !isNaN(y)) { pts.push([x, y]); continue; }
+    }
+    // try treating consecutive numeric tokens as pairs
+    if (parts.length === 1 && i + 1 < tokens.length) {
+      const x = parseInt(tokens[i], 10), y = parseInt(tokens[i + 1], 10);
+      if (!isNaN(x) && !isNaN(y)) { pts.push([x, y]); i++; continue; }
+    }
+    return null; // parse failure
+  }
+  return pts.length ? pts : null;
+}
+
+function applyImport(pts) {
+  // pts are [x,y] relative coords — map to grid cells
   reset();
-  const nonCenter=[];
-  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!(r===C&&c===C))nonCenter.push(r*N+c);
-  for(let i=nonCenter.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nonCenter[i],nonCenter[j]]=[nonCenter[j],nonCenter[i]];}
-  const count=2+Math.floor(Math.random()*4);
-  for(let k=0;k<count;k++){const i=nonCenter[k];cells[i]=true;cellEls[i].className='kc on';}
+  let clipped = 0;
+  for (const [x, y] of pts) {
+    const r = C - y, c = x + C;
+    if (r >= 0 && r < N && c >= 0 && c < N) {
+      const i = r * N + c;
+      if (r === C && c === C) continue; // skip origin
+      cells[i] = true;
+      cellEls[i].className = 'kc on';
+    } else {
+      clipped++;
+    }
+  }
+  const hint = document.getElementById('importHint');
+  if (clipped > 0) hint.textContent = `imported — ${clipped} point(s) outside ${N}×${N} grid clipped`;
+  else hint.textContent = `imported ${pts.length} point(s)`;
   go();
+}
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  const raw = document.getElementById('importInput').value;
+  const input = document.getElementById('importInput');
+  const pts = parseImport(raw);
+  if (!pts) {
+    input.classList.add('err');
+    document.getElementById('importHint').textContent = 'could not parse — try "1,2 -1,1" or "11011,11W11,00100"';
+    setTimeout(() => input.classList.remove('err'), 1200);
+    return;
+  }
+  input.classList.remove('err');
+  applyImport(pts);
 });
+
+document.getElementById('importInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('importBtn').click();
+});
+
+// ── Random button with inline count slider ────────────────────────────────
+const rndSlider = document.getElementById('rndSlider');
+const rndCountLabel = document.getElementById('rndCountLabel');
+const rndAny = document.getElementById('rndAny');
+
+function updateSlider() {
+  const min = +rndSlider.min, max = +rndSlider.max, val = +rndSlider.value;
+  rndSlider.style.setProperty('--pct', ((val - min) / (max - min) * 100).toFixed(1) + '%');
+  rndCountLabel.textContent = rndAny.checked ? '?' : val;
+  rndSlider.style.opacity = rndAny.checked ? '0.3' : '1';
+  rndSlider.disabled = rndAny.checked;
+}
+rndSlider.addEventListener('input', updateSlider);
+rndAny.addEventListener('change', updateSlider);
+updateSlider();
+
+document.getElementById('rndBtn').addEventListener('click', doRandom);
+
+function doRandom() {
+  reset();
+  const maxCells = N * N - 1;
+  // low-biased: take min of two uniform samples so it skews toward lower end
+  const randLow = () => 1 + Math.floor(Math.min(Math.random(), Math.random()) * maxCells);
+  const count = rndAny.checked ? randLow() : Math.min(+rndSlider.value, maxCells);
+  const nonCenter = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!(r === C && c === C)) nonCenter.push(r * N + c);
+  for (let i = nonCenter.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [nonCenter[i], nonCenter[j]] = [nonCenter[j], nonCenter[i]]; }
+  for (let k = 0; k < count; k++) { const i = nonCenter[k]; cells[i] = true; cellEls[i].className = 'kc on'; }
+  go();
+}
 
 // ── Presets ───────────────────────────────────────────────────────────────
 const PRESETS=[
