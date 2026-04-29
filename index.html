@@ -141,14 +141,138 @@
 
   .divider { height: 1px; background: var(--glass-border-soft); margin: 1.5rem 0; }
 
-  .presets-label { font-size: 0.67rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.75rem; }
-  .preset-row { display: flex; flex-wrap: wrap; gap: 7px; }
-  .preset-btn {
-    font-family: var(--sans); font-size: 0.78rem; font-weight: 400; padding: 7px 15px; border-radius: 99px;
-    border: 1px solid var(--glass-border-soft); background: rgba(255,255,255,0.6); color: var(--text-secondary);
-    cursor: pointer; transition: all 0.14s; box-shadow: var(--shadow-sm); -webkit-tap-highlight-color: transparent;
+  /* save to library modal */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.18s;
   }
-  .preset-btn:hover { background: rgba(255,255,255,0.92); border-color: rgba(0,113,227,0.3); color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(40px) saturate(2);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 1.5rem;
+    width: 320px;
+    transform: translateY(10px) scale(0.97);
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .modal-overlay.show .modal { transform: translateY(0) scale(1); }
+  .modal-title { font-size: 0.95rem; font-weight: 500; letter-spacing: -0.015em; margin-bottom: 1.1rem; color: var(--text-primary); }
+  .modal-field { margin-bottom: 0.85rem; }
+  .modal-field label { display: block; font-family: var(--mono); font-size: 0.62rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .modal-input {
+    width: 100%; font-family: var(--mono); font-size: 0.8rem;
+    padding: 8px 11px; border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-soft);
+    background: rgba(255,255,255,0.7); color: var(--text-primary);
+    outline: none; transition: border-color 0.14s;
+    box-shadow: var(--shadow-inset);
+  }
+  .modal-input:focus { border-color: rgba(0,113,227,0.4); }
+  .modal-select {
+    width: 100%; font-family: var(--mono); font-size: 0.8rem;
+    padding: 8px 11px; border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-soft);
+    background: rgba(255,255,255,0.7); color: var(--text-primary);
+    outline: none; cursor: pointer; appearance: none;
+    box-shadow: var(--shadow-inset);
+  }
+  .modal-preview-wrap { margin-bottom: 0.85rem; display: flex; justify-content: center; }
+  .modal-preview-wrap svg { border-radius: var(--radius-sm); border: 1px solid var(--glass-border-soft); width: 120px; height: 90px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.1rem; }
+  .modal-btn {
+    font-family: var(--sans); font-size: 0.8rem; font-weight: 500;
+    padding: 8px 18px; border-radius: 99px; border: none; cursor: pointer; transition: all 0.14s;
+  }
+  .modal-btn-cancel { background: rgba(0,0,0,0.06); color: var(--text-secondary); }
+  .modal-btn-cancel:hover { background: rgba(0,0,0,0.1); }
+  .modal-btn-save { background: var(--accent); color: #fff; box-shadow: 0 2px 10px var(--accent-glow); }
+  .modal-btn-save:hover { background: #0077ed; }
+
+  /* lib card delete btn */
+  .lib-card { position: relative; }
+  .lib-card-del {
+    position: absolute; top: 4px; right: 4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(255,69,58,0.85); color: #fff;
+    border: none; cursor: pointer; font-size: 10px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.12s, transform 0.12s;
+    transform: scale(0.7);
+    z-index: 2;
+  }
+  .lib-card:hover .lib-card-del { opacity: 1; transform: scale(1); }
+  .lib-card-del:hover { background: var(--red); }
+
+  /* save btn next to library label */
+  .library-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+  .library-label { font-size: 0.67rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-tertiary); }
+  .btn-save-lib {
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 500;
+    padding: 4px 11px; border-radius: 99px;
+    border: 1px solid var(--glass-border-soft);
+    background: rgba(255,255,255,0.6); color: var(--text-secondary);
+    cursor: pointer; transition: all 0.14s; box-shadow: var(--shadow-sm);
+  }
+  .btn-save-lib:hover { border-color: rgba(0,113,227,0.3); color: var(--accent); background: rgba(255,255,255,0.9); }
+
+  /* folders */
+  .folders { display: flex; flex-direction: column; gap: 4px; }
+  .folder { border: 1px solid var(--glass-border-soft); border-radius: var(--radius-md); overflow: hidden; background: rgba(255,255,255,0.35); }
+  .folder-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 13px; cursor: pointer;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+    transition: background 0.13s;
+  }
+  .folder-header:hover { background: rgba(255,255,255,0.5); }
+  .folder-chevron { font-size: 10px; color: var(--text-tertiary); transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); flex-shrink: 0; }
+  .folder.open .folder-chevron { transform: rotate(90deg); }
+  .folder-name { font-family: var(--mono); font-size: 0.75rem; font-weight: 500; color: var(--text-primary); flex: 1; letter-spacing: 0.01em; }
+  .folder-count { font-family: var(--mono); font-size: 0.65rem; color: var(--text-tertiary); background: rgba(0,0,0,0.05); padding: 1px 7px; border-radius: 99px; }
+
+  /* folder contents — horizontal card scroll */
+  .folder-items {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.28s cubic-bezier(0.4,0,0.2,1);
+    border-top: 0px solid var(--glass-border-soft);
+  }
+  .folder.open .folder-items { max-height: 160px; border-top-width: 1px; }
+  .folder-items-inner {
+    display: flex; gap: 8px; padding: 10px 12px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .folder-items-inner::-webkit-scrollbar { display: none; }
+
+  /* individual pattern card */
+  .lib-card {
+    flex-shrink: 0;
+    width: 80px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--glass-border-soft);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.14s;
+    overflow: visible;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lib-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); border-color: rgba(0,113,227,0.35); }
+  .lib-card:active { transform: translateY(0); }
+  .lib-preview { display: block; width: 80px; height: 60px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+  .lib-card-name {
+    font-family: var(--mono); font-size: 0.6rem; color: var(--text-secondary);
+    padding: 4px 6px 5px; text-align: center;
+    border-top: 1px solid var(--glass-border-soft);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
 
   /* import panel */
   .import-wrap { margin-top: 0.9rem; }
@@ -254,6 +378,7 @@
         <div class="import-row">
           <input class="import-input" id="importInput" placeholder="11011,11W11,00100 or 1,2 -1,1 2,-2" spellcheck="false">
           <button class="btn-import" id="importBtn">Import</button>
+          <button class="btn-import" id="exportBtn">Export</button>
         </div>
         <div class="import-hint" id="importHint"></div>
       </div>
@@ -283,8 +408,31 @@
   </div>
 
   <div class="divider"></div>
-  <div class="presets-label">Presets</div>
-  <div class="preset-row" id="presets"></div>
+  <div class="library-header">
+    <span class="library-label">Library</span>
+    <button class="btn-save-lib" id="saveLibBtn">+ Save current</button>
+  </div>
+  <div class="folders" id="folders"></div>
+</div>
+
+<!-- Save to library modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">Save to Library</div>
+    <div class="modal-preview-wrap" id="modalPreview"></div>
+    <div class="modal-field">
+      <label>Name</label>
+      <input class="modal-input" id="modalName" placeholder="pattern name" spellcheck="false">
+    </div>
+    <div class="modal-field">
+      <label>Folder</label>
+      <select class="modal-select" id="modalFolder"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="modalCancel">Cancel</button>
+      <button class="modal-btn modal-btn-save" id="modalSave">Save</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -635,6 +783,37 @@ document.getElementById('importInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('importBtn').click();
 });
 
+// ── Export button ─────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const hint = document.getElementById('importHint');
+  const btn = document.getElementById('exportBtn');
+
+  if (!cells.some(Boolean)) {
+    hint.textContent = 'nothing to export — add some vectors first';
+    return;
+  }
+
+  // build grid string row by row
+  const rows = [];
+  for (let r = 0; r < N; r++) {
+    let row = '';
+    for (let c = 0; c < N; c++) {
+      const isOrigin = r === C && c === C;
+      row += isOrigin ? 'W' : (cells[r * N + c] ? '1' : '0');
+    }
+    rows.push(row);
+  }
+
+  const text = rows.join(',');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    hint.textContent = `copied: ${text}`;
+    setTimeout(() => { btn.textContent = 'Export'; }, 1500);
+  }).catch(() => {
+    hint.textContent = `export: ${text}`;
+  });
+});
+
 // ── Random button with inline count slider ────────────────────────────────
 const rndSlider = document.getElementById('rndSlider');
 const rndCountLabel = document.getElementById('rndCountLabel');
@@ -666,30 +845,225 @@ function doRandom() {
   go();
 }
 
-// ── Presets ───────────────────────────────────────────────────────────────
-const PRESETS=[
-  {name:'w=1 axis',      offsets:[[0,1]]},
-  {name:'w=2 diagonal',  offsets:[[-1,-1],[1,1]]},
-  {name:'w=2 L-shape',   offsets:[[-2,0],[0,1]]},
-  {name:'w=3 triangle',  offsets:[[-2,-2],[0,1],[2,-1]]},
-  {name:'w=3 skew',      offsets:[[-2,1],[1,2],[-1,-2]]},
-  {name:'w=4 box',       offsets:[[-2,-2],[2,-2],[-2,2],[2,2]]},
+// ── Library (localStorage-backed) ────────────────────────────────────────
+const DEFAULT_LIBRARY = [
+  {
+    name: 'feds',
+    items: [
+      { name: 'alpha-1', offsets: [[0,1],[1,0],[-1,0]] },
+      { name: 'alpha-2', offsets: [[1,1],[-1,1],[0,-2]] },
+      { name: 'alpha-3', offsets: [[2,0],[0,2],[-2,0]] },
+    ]
+  },
+  {
+    name: 'reds',
+    items: [
+      { name: 'beta-1',  offsets: [[-2,-1],[1,2],[2,-1]] },
+      { name: 'beta-2',  offsets: [[1,-2],[-1,-2],[2,1]] },
+      { name: 'beta-3',  offsets: [[-2,2],[2,2],[0,-2]] },
+    ]
+  },
+  {
+    name: 'misc',
+    items: [
+      { name: 'gamma-1', offsets: [[1,1]] },
+      { name: 'gamma-2', offsets: [[-2,-2],[2,2]] },
+      { name: 'gamma-3', offsets: [[2,-1],[-1,2],[-1,-1]] },
+    ]
+  },
 ];
-const pr=document.getElementById('presets');
-for(const p of PRESETS){
-  const btn=document.createElement('button');
-  btn.className='preset-btn';
-  btn.textContent=p.name;
-  btn.addEventListener('click',()=>{
-    reset();
-    for(const[x,y]of p.offsets){
-      const r=C-y, c=x+C;
-      if(r>=0&&r<N&&c>=0&&c<N){const i=r*N+c;cells[i]=true;cellEls[i].className='kc on';}
-    }
-    go();
-  });
-  pr.appendChild(btn);
+
+function loadLibraryData() {
+  try {
+    const stored = localStorage.getItem('weed_library');
+    return stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_LIBRARY));
+  } catch { return JSON.parse(JSON.stringify(DEFAULT_LIBRARY)); }
 }
+
+function saveLibraryData(data) {
+  try { localStorage.setItem('weed_library', JSON.stringify(data)); } catch {}
+}
+
+let libraryData = loadLibraryData();
+
+function makePreview(offsets, W=80, H=60) {
+  const GN = 5, GC = 2;
+  const cellW = W / GN, cellH = H / GN;
+  const r2 = cellW * 0.28;
+  let cells_svg = '', grid_svg = '';
+  for (let i = 1; i < GN; i++) {
+    grid_svg += `<line x1="${i*cellW}" y1="0" x2="${i*cellW}" y2="${H}" stroke="rgba(0,0,0,0.06)" stroke-width="0.5"/>`;
+    grid_svg += `<line x1="0" y1="${i*cellH}" x2="${W}" y2="${i*cellH}" stroke="rgba(0,0,0,0.06)" stroke-width="0.5"/>`;
+  }
+  for (let r = 0; r < GN; r++) {
+    for (let c = 0; c < GN; c++) {
+      const cx = c * cellW + cellW / 2, cy = r * cellH + cellH / 2;
+      const isOrigin = r === GC && c === GC;
+      const x = c - GC, y = GC - r;
+      const isOn = offsets.some(([ox,oy]) => ox===x && oy===y);
+      if (isOrigin) {
+        cells_svg += `<rect x="${c*cellW+1}" y="${r*cellH+1}" width="${cellW-2}" height="${cellH-2}" rx="2" fill="rgba(0,113,227,0.08)" stroke="rgba(0,113,227,0.2)" stroke-width="0.5"/>`;
+        cells_svg += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="rgba(0,113,227,0.35)"/>`;
+      } else if (isOn) {
+        cells_svg += `<rect x="${c*cellW+1}" y="${r*cellH+1}" width="${cellW-2}" height="${cellH-2}" rx="2" fill="rgba(0,113,227,0.12)" stroke="rgba(0,113,227,0.3)" stroke-width="0.5"/>`;
+        cells_svg += `<circle cx="${cx}" cy="${cy}" r="${r2}" fill="rgba(0,113,227,0.7)"/>`;
+      }
+    }
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid_svg}${cells_svg}</svg>`;
+}
+
+function getCurrentOffsets() {
+  const pts = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++)
+    if (cells[r * N + c]) pts.push([c - C, C - r]);
+  return pts;
+}
+
+function loadLibraryItem(offsets) {
+  reset();
+  for (const [x, y] of offsets) {
+    const r = C - y, c = x + C;
+    if (r >= 0 && r < N && c >= 0 && c < N) {
+      const i = r * N + c; cells[i] = true; cellEls[i].className = 'kc on';
+    }
+  }
+  go();
+}
+
+// ── Render library ────────────────────────────────────────────────────────
+const foldersEl = document.getElementById('folders');
+
+function renderLibrary() {
+  foldersEl.innerHTML = '';
+  // remember which folders were open
+  const openState = {};
+  document.querySelectorAll('.folder').forEach(f => {
+    const name = f.querySelector('.folder-name')?.textContent;
+    if (name) openState[name] = f.classList.contains('open');
+  });
+
+  for (let fi = 0; fi < libraryData.length; fi++) {
+    const folder = libraryData[fi];
+    const div = document.createElement('div');
+    div.className = 'folder' + (openState[folder.name] ? ' open' : '');
+
+    const header = document.createElement('div');
+    header.className = 'folder-header';
+    header.innerHTML = `
+      <span class="folder-chevron">▶</span>
+      <span class="folder-name">${folder.name}</span>
+      <span class="folder-count">${folder.items.length}</span>
+    `;
+    header.addEventListener('click', () => div.classList.toggle('open'));
+
+    const itemsWrap = document.createElement('div');
+    itemsWrap.className = 'folder-items';
+    const itemsInner = document.createElement('div');
+    itemsInner.className = 'folder-items-inner';
+
+    for (let ii = 0; ii < folder.items.length; ii++) {
+      const item = folder.items[ii];
+      const folderIdx = fi;
+      const itemIdx = ii;
+      const card = document.createElement('div');
+      card.className = 'lib-card';
+
+      const previewSvg = makePreview(item.offsets);
+      card.innerHTML = previewSvg + `<div class="lib-card-name">${item.name}</div>`;
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'lib-card-del';
+      delBtn.title = 'Delete';
+      delBtn.textContent = '✕';
+      let pendingDelete = false;
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!pendingDelete) {
+          // first click: turn into confirm state
+          pendingDelete = true;
+          delBtn.textContent = '?';
+          delBtn.style.width = '18px';
+          setTimeout(() => { 
+            if (pendingDelete) { pendingDelete = false; delBtn.textContent = '✕'; }
+          }, 2000);
+          return;
+        }
+        // second click: actually delete
+        pendingDelete = false;
+        libraryData[folderIdx].items.splice(itemIdx, 1);
+        saveLibraryData(libraryData);
+        renderLibrary();
+        // reopen the folder
+        const folders = document.querySelectorAll('.folder');
+        if (folders[folderIdx]) folders[folderIdx].classList.add('open');
+      });
+
+      card.appendChild(delBtn);
+      card.addEventListener('click', () => loadLibraryItem(item.offsets));
+      itemsInner.appendChild(card);
+    }
+
+    itemsWrap.appendChild(itemsInner);
+    div.appendChild(header);
+    div.appendChild(itemsWrap);
+    foldersEl.appendChild(div);
+  }
+
+  // update modal folder select
+  const sel = document.getElementById('modalFolder');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = libraryData.map(f => `<option value="${f.name}">${f.name}</option>`).join('');
+    if (prev) sel.value = prev;
+  }
+}
+
+renderLibrary();
+
+// ── Save modal ────────────────────────────────────────────────────────────
+const overlay = document.getElementById('modalOverlay');
+const modalName = document.getElementById('modalName');
+const modalFolder = document.getElementById('modalFolder');
+const modalPreview = document.getElementById('modalPreview');
+
+document.getElementById('saveLibBtn').addEventListener('click', () => {
+  const offsets = getCurrentOffsets();
+  if (!offsets.length) {
+    document.getElementById('importHint').textContent = 'nothing to save — add some vectors first';
+    return;
+  }
+  // populate modal
+  modalPreview.innerHTML = makePreview(offsets, 120, 90);
+  modalPreview.querySelector('svg').style.cssText = 'border-radius:9px;border:1px solid rgba(200,200,210,0.45);width:120px;height:90px;';
+  modalName.value = '';
+  renderLibrary(); // refresh folder select
+  overlay.classList.add('show');
+  setTimeout(() => modalName.focus(), 200);
+});
+
+document.getElementById('modalCancel').addEventListener('click', () => overlay.classList.remove('show'));
+overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('show'); });
+
+document.getElementById('modalSave').addEventListener('click', () => {
+  const name = modalName.value.trim() || 'untitled';
+  const folderName = modalFolder.value;
+  const offsets = getCurrentOffsets();
+  const folder = libraryData.find(f => f.name === folderName);
+  if (folder) {
+    folder.items.push({ name, offsets });
+    saveLibraryData(libraryData);
+    renderLibrary();
+    overlay.classList.remove('show');
+    // open the folder we just saved to
+    document.querySelectorAll('.folder').forEach(f => {
+      if (f.querySelector('.folder-name')?.textContent === folderName) f.classList.add('open');
+    });
+  }
+});
+
+modalName.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('modalSave').click(); });
 </script>
 </body>
 </html>
