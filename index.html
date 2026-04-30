@@ -667,7 +667,7 @@ function go(){
     setMetric('ma','va',a);
     setMetric('mb','vb',b);
     setMetric('mc','vc',c);
-    document.getElementById('st').textContent=linear?'linear growth (a = 0)':`stabilized at n = ${stableAt}`;
+    document.getElementById('st').textContent=linear?'linear growth (a = 0)':`stabilized at n = ${stableAt-2}`;
 
     function term(q,v){
       if(q.toFloat()===0)return'';
