@@ -136,6 +136,17 @@
 
   .formula-box { background: linear-gradient(135deg, rgba(0,113,227,0.07), rgba(0,113,227,0.03)); border: 1px solid rgba(0,113,227,0.18); border-radius: var(--radius-md); padding: 0.875rem 1rem; margin-top: 8px; display: none; }
   .formula-box.show { display: block; }
+  .vertex-box {
+    background: linear-gradient(135deg, rgba(48,209,88,0.07), rgba(48,209,88,0.03));
+    border: 1px solid rgba(48,209,88,0.2);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+    margin-top: 8px;
+    display: none;
+  }
+  .vertex-box.show { display: block; }
+  .vertex-box .formula-lbl { color: rgba(48,209,88,0.6); }
+  .vertex-box .formula-val { color: #1a7a38; }
   .formula-lbl { font-family: var(--mono); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(0,113,227,0.55); margin-bottom: 5px; }
   .formula-val { font-family: var(--mono); font-size: 0.88rem; color: var(--accent); }
 
@@ -409,6 +420,7 @@
       <div class="seq-box"><div class="seq-lbl">Counts</div><div class="seq-val" id="seq">Run the simulator to see growth counts</div></div>
       <div class="seq-box"><div class="seq-lbl">Second differences</div><div class="seq-val" id="d2">—</div></div>
       <div class="formula-box" id="fbox"><div class="formula-lbl">Fitted formula</div><div class="formula-val" id="fval"></div></div>
+      <div class="vertex-box" id="vbox"><div class="formula-lbl">Vertex</div><div class="formula-val" id="vval"></div></div>
     </div>
   </div>
 
@@ -667,7 +679,7 @@ function go(){
     setMetric('ma','va',a);
     setMetric('mb','vb',b);
     setMetric('mc','vc',c);
-    document.getElementById('st').textContent=linear?'linear growth (a = 0)':`stabilized at n = ${stableAt-2}`;
+    document.getElementById('st').textContent=linear?'linear growth (a = 0)':`stabilized at n = ${stableAt}`;
 
     function term(q,v){
       if(q.toFloat()===0)return'';
@@ -679,6 +691,17 @@ function go(){
     const parts=[term(a,'n²'),term(b,'n'),term(c,'')].filter(Boolean);
     document.getElementById('fval').textContent=parts.length?`W(n) = ${parts.join(' + ').replace(/\+ -/g,'− ')}`:'W(n) = 0';
     document.getElementById('fbox').classList.add('show');
+
+    // vertex = (-b/2a, c - b²/4a)
+    const vbox=document.getElementById('vbox'), vval=document.getElementById('vval');
+    if(a.toFloat()!==0){
+      const vx=new Q(-b.n*a.d, b.d*2*a.n);
+      const vy=c.sub(new Q(b.n*b.n*a.d, b.d*b.d*4*a.n));
+      vval.textContent=`(${vx}, ${vy})`;
+      vbox.classList.add('show');
+    } else {
+      vbox.classList.remove('show');
+    }
 
     const aInt=a.isInt(),bInt=b.isInt();
     if(linear) tags.innerHTML+=`<span class="tag tag-info">linear</span>`;
@@ -698,6 +721,7 @@ function reset(){
   document.getElementById('seq').textContent='Run the simulator to see growth counts';
   document.getElementById('d2').textContent='—';
   document.getElementById('fbox').classList.remove('show');
+  document.getElementById('vbox').classList.remove('show');
 }
 
 // ── Import parser ─────────────────────────────────────────────────────────
