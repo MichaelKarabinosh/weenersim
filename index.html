@@ -375,6 +375,187 @@
   }
   .switch input:checked ~ .switch-thumb { transform: translateX(18px); }
 
+  /* ── ABOUT PAGE ───────────────────────────────────────────────────────── */
+  .about-btn {
+    position: fixed; top: 1.5rem; right: 1.5rem; z-index: 150;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border-soft);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.8rem; font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.14s;
+  }
+  .about-btn:hover { background: rgba(255,255,255,0.95); color: var(--accent); border-color: rgba(0,113,227,0.3); transform: scale(1.08); }
+
+  .about-page {
+    position: fixed; inset: 0; z-index: 400;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.28s;
+  }
+  .about-page.open { opacity: 1; pointer-events: all; }
+
+  .about-backdrop-placeholder { display: none; }
+
+  .about-card {
+    position: relative; z-index: 1;
+    background: rgba(255,255,255,0.78);
+    backdrop-filter: blur(40px) saturate(2);
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: 28px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.13), 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+    width: 100%; max-width: 500px;
+    max-height: 90vh; overflow: hidden;
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+    will-change: transform;
+  }
+  .about-page.open .about-card { transform: translateY(0) scale(1); }
+
+  .about-canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    border-radius: 28px; pointer-events: none; opacity: 0.6;
+  }
+
+  .about-deco {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    border-radius: 28px;
+  }
+  .about-sym {
+    position: absolute;
+    font-family: var(--mono); font-weight: 300;
+    color: rgba(0,113,227,0.08);
+    user-select: none;
+    animation: about-float 7s ease-in-out infinite;
+    transition: transform 0.15s ease-out;
+  }
+  @keyframes about-float {
+    0%,100% { transform: translateY(0px); }
+    50%      { transform: translateY(-10px); }
+  }
+
+  .about-inner {
+    position: relative; z-index: 2;
+    padding: 2.25rem 2.25rem 1.75rem;
+    overflow-y: auto; max-height: 90vh;
+  }
+  .about-inner::-webkit-scrollbar { width: 3px; }
+  .about-inner::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 99px; }
+
+  .about-close {
+    position: absolute; top: 1.1rem; right: 1.1rem; z-index: 10;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(0,0,0,0.06); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--text-secondary);
+    transition: all 0.14s;
+  }
+  .about-close:hover { background: rgba(0,0,0,0.12); color: var(--text-primary); transform: scale(1.1); }
+
+  .about-eyebrow {
+    font-family: var(--mono); font-size: 0.58rem; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .about-eyebrow::before {
+    content: ''; display: block; width: 18px; height: 1px;
+    background: var(--accent); opacity: 0.45;
+  }
+
+  .about-title {
+    font-size: 2.1rem; font-weight: 400; letter-spacing: -0.04em;
+    color: var(--text-primary); line-height: 1.05; margin-bottom: 0.25rem;
+  }
+  .about-title em { font-style: italic; color: var(--accent); }
+
+  .about-formula {
+    font-family: var(--mono); font-size: 0.76rem;
+    color: var(--text-tertiary); margin-bottom: 1.5rem; letter-spacing: 0.02em;
+  }
+
+  .about-body {
+    font-size: 0.84rem; color: var(--text-secondary);
+    line-height: 1.7; margin-bottom: 1.25rem;
+  }
+  .about-body em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+  .about-divider { height: 1px; background: var(--glass-border-soft); margin: 1.1rem 0; }
+
+  .about-section-lbl {
+    font-family: var(--mono); font-size: 0.58rem; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 0.65rem;
+  }
+
+  .about-chips { display: flex; flex-direction: column; gap: 7px; margin-bottom: 1.5rem; }
+  .about-chip {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid var(--glass-border-soft);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    box-shadow: var(--shadow-inset);
+    transition: all 0.14s;
+  }
+  .about-chip:hover { background: rgba(255,255,255,0.85); border-color: rgba(0,113,227,0.2); transform: translateX(3px); }
+  .about-chip-icon { font-size: 0.85rem; color: var(--accent); width: 18px; text-align: center; flex-shrink: 0; }
+  .about-chip-text { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.3; }
+  .about-chip-text b { color: var(--text-primary); font-weight: 500; }
+
+  .about-footer {
+    font-family: var(--mono); font-size: 0.58rem;
+    color: var(--text-tertiary); text-align: center;
+    opacity: 0.6;
+  }
+
+  /* credit */
+  .about-credit { margin-bottom: 1.25rem; }
+  .about-credit-label {
+    font-family: var(--mono); font-size: 0.58rem; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 0.75rem;
+  }
+  .about-credit-names { display: flex; gap: 2rem; }
+  .about-credit-person { display: flex; flex-direction: column; gap: 4px; }
+  .about-credit-name {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--text-secondary); letter-spacing: 0.02em;
+  }
+  .about-sig {
+    width: 110px; height: 32px;
+    color: var(--accent); opacity: 0.5;
+  }
+  .about-sig svg { width: 100%; height: 100%; }
+  .sig-path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: sig-draw 1.8s cubic-bezier(0.4,0,0.2,1) forwards;
+    animation-play-state: paused;
+  }
+  .about-page.open .sig-path {
+    animation-play-state: running;
+  }
+  #sig2 .sig-path { animation-delay: 0.4s; }
+  @keyframes sig-draw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* pulsating backdrop */
+  .about-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(230,233,242,0.88);
+    backdrop-filter: blur(28px);
+    animation: backdrop-pulse 4s ease-in-out infinite;
+  }
+  @keyframes backdrop-pulse {
+    0%,100% { background: rgba(228,232,242,0.88); }
+    50%      { background: rgba(222,230,248,0.92); }
+  }
+
   /* ── SIM PAGE ─────────────────────────────────────────────────────── */
   .sim-page {
     position: fixed; inset: 0; z-index: 200;
@@ -558,6 +739,94 @@
 </style>
 </head>
 <body>
+
+<button class="about-btn" onclick="openAbout()">?</button>
+
+<div class="about-page" id="aboutPage">
+  <div class="about-backdrop" onclick="closeAbout()"></div>
+  <div class="about-card" id="aboutCard">
+
+    <!-- animated background particles -->
+    <canvas class="about-canvas" id="aboutCanvas"></canvas>
+
+    <!-- floating math -->
+    <div class="about-deco">
+      <span class="about-sym" data-depth="0.3" style="font-size:5rem;top:3%;left:-3%">W</span>
+      <span class="about-sym" data-depth="0.6" style="font-size:2.2rem;top:8%;right:6%">an²</span>
+      <span class="about-sym" data-depth="0.4" style="font-size:1.6rem;bottom:22%;left:2%">+ bn</span>
+      <span class="about-sym" data-depth="0.8" style="font-size:3.5rem;bottom:6%;right:-2%">+ c</span>
+      <span class="about-sym" data-depth="0.5" style="font-size:1.4rem;top:42%;left:1%">∑</span>
+      <span class="about-sym" data-depth="0.7" style="font-size:2rem;top:62%;right:4%">∂</span>
+      <span class="about-sym" data-depth="0.2" style="font-size:1rem;top:28%;right:2%">∇</span>
+    </div>
+
+    <button class="about-close" onclick="closeAbout()">✕</button>
+
+    <div class="about-inner">
+      <div class="about-eyebrow">research tool</div>
+      <div class="about-title"><em>Weener</em> Sim</div>
+      <div class="about-formula">W(n) = an² + bn + c</div>
+
+      <div class="about-body">
+        Pick a set of directions on a grid. This is your pattern. Weens (weeds) start at the center and spread. Every day, each ween copies itself in every direction you chose. Take a note of the sequence for a few days and you'll quickly notice the count starts following a clean quadratic: W(n) = an² + bn + c, where n is the day.<br><br>
+        The way you actually find this formula is through <em>second differences</em>. Take the day-to-day growth, then take the differences of those: the rate of change of the rate of change. Most patterns will be erratic early on, with an erpe (erratic period) of length n. Once it's been flat for several days in a row, you can fit a, b, and c exactly. That moment is what <em>stabilized at n = ...</em> marks.<br><br>
+        Once a pattern reaches a constant second difference value, dividing this by two gives <em>a</em>, and it has a clean geometric formula: <em>a = erea ÷ prick</em>. Erea (shown on the app) is twice the extreme area — the tightest polygon you can draw around all your chosen directions. Prick accounts for gaps: when your vectors share a common divisor, the grid they generate is coarser than the full integer lattice, and prick measures that.<br><br>
+        <em>b</em> is the open problem. We know it's connected to the inner structure of your pattern and to w — the number of vectors you placed. There's a proven formula for certain cases, and the rest is still being worked out. That's what this tool is for.<br><br>
+        We haven't done that much looking into <em>c</em> yet. What we're guessing now is that it captures the irregular early period before growth settles into its quadratic period.
+      </div>
+
+      <div class="about-divider"></div>
+
+      <div class="about-section-lbl">Terms on the app</div>
+      <div class="about-chips">
+        <div class="about-chip">
+          <div class="about-chip-icon">w</div>
+          <div class="about-chip-text"><b>w</b> — number of spots / vectors / directions you've placed</div>
+        </div>
+        <div class="about-chip">
+          <div class="about-chip-icon">⬡</div>
+          <div class="about-chip-text"><b>erea</b> — extreme area of your vectors (×2, always an integer)</div>
+        </div>
+        <div class="about-chip">
+          <div class="about-chip-icon">#</div>
+          <div class="about-chip-text"><b>prick</b> — pattern density; how coarse the grid your vectors generate is</div>
+        </div>
+        <div class="about-chip">
+          <div class="about-chip-icon">△</div>
+          <div class="about-chip-text"><b>second differences</b> — the sequence of Δ²W(n); flattens to 2a at stabilization</div>
+        </div>
+      </div>
+
+      <div class="about-divider"></div>
+
+      <!-- credit section -->
+      <div class="about-credit">
+        <div class="about-credit-label">built by</div>
+        <div class="about-credit-names">
+          <div class="about-credit-person">
+            <div class="about-sig" id="sig1">
+              <svg viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 28 Q18 8 28 20 Q38 32 48 16 Q58 4 68 18 Q78 30 88 14 Q98 2 112 22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" class="sig-path"/>
+              </svg>
+            </div>
+            <div class="about-credit-name">Michael Karabinosh</div>
+          </div>
+          <div class="about-credit-person">
+            <div class="about-sig" id="sig2">
+              <svg viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 20 Q20 6 32 22 Q44 36 54 18 Q62 6 72 20 Q82 32 96 16 Q104 8 112 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" class="sig-path"/>
+              </svg>
+            </div>
+            <div class="about-credit-name">Rewa Okubo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-footer">press esc to close</div>
+    </div>
+  </div>
+</div>
+
 
 <div class="page-header">
   <div class="page-title">Weener Sim</div>
@@ -1879,6 +2148,187 @@ function simRender() {
   simCtx.textAlign = 'right';
   simCtx.textBaseline = 'bottom';
   simCtx.fillText('scroll to zoom · drag to pan', W - 10, H - 8);
+}
+
+// ── About page ─────────────────────────────────────────────────────────────
+function openAbout() {
+  document.getElementById('aboutPage').classList.add('open');
+  startAboutCanvas();
+}
+function closeAbout() {
+  document.getElementById('aboutPage').classList.remove('open');
+  stopAboutCanvas();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('aboutPage').classList.contains('open')) { closeAbout(); return; }
+});
+
+// ── smooth symbol parallax (no card tilt) ────────────────────────────────
+let aboutMouseRaf = null;
+let aboutTargetDx = 0, aboutTargetDy = 0;
+let aboutCurrentDx = 0, aboutCurrentDy = 0;
+
+document.getElementById('aboutPage').addEventListener('mousemove', e => {
+  const card = document.getElementById('aboutCard');
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  aboutTargetDx = (e.clientX - (rect.left + rect.width / 2)) / rect.width;
+  aboutTargetDy = (e.clientY - (rect.top + rect.height / 2)) / rect.height;
+  if (!aboutMouseRaf) aboutMouseRaf = requestAnimationFrame(animateParallax);
+});
+document.getElementById('aboutPage').addEventListener('mouseleave', () => {
+  aboutTargetDx = 0; aboutTargetDy = 0;
+});
+
+function animateParallax() {
+  const ease = 0.07;
+  aboutCurrentDx += (aboutTargetDx - aboutCurrentDx) * ease;
+  aboutCurrentDy += (aboutTargetDy - aboutCurrentDy) * ease;
+  document.querySelectorAll('.about-sym').forEach(sym => {
+    const depth = parseFloat(sym.dataset.depth || 0.5);
+    sym.style.transform = `translate(${aboutCurrentDx * depth * 22}px, ${aboutCurrentDy * depth * 14}px)`;
+  });
+  const stillMoving = Math.abs(aboutCurrentDx - aboutTargetDx) > 0.0005 || Math.abs(aboutCurrentDy - aboutTargetDy) > 0.0005;
+  aboutMouseRaf = stillMoving ? requestAnimationFrame(animateParallax) : null;
+}
+
+// ── about page ween animation ─────────────────────────────────────────────
+let aboutAnimId = null;
+
+function startAboutCanvas() {
+  const canvas = document.getElementById('aboutCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  canvas.width = W; canvas.height = H;
+
+  const CELL = 9;
+  const CX = Math.floor(W / 2 / CELL);
+  const CY = Math.floor(H / 2 / CELL);
+
+  // pick 3–7 random vectors from a 7×7 grid (excluding origin)
+  const possible = [];
+  for (let dy = -3; dy <= 3; dy++)
+    for (let dx = -3; dx <= 3; dx++)
+      if (!(dx === 0 && dy === 0)) possible.push([dx, dy]);
+
+  const w = 3 + Math.floor(Math.random() * 5); // 3–7
+  const shuffled = possible.sort(() => Math.random() - 0.5);
+  const VECS = [[0, 0], ...shuffled.slice(0, w)];
+
+  // pre-simulate 30 days
+  const dayMap = new Map();
+  dayMap.set(`${CX},${CY}`, 0);
+  let current = new Set([`${CX},${CY}`]);
+  const states = [new Set(current)];
+
+  for (let d = 1; d <= 30; d++) {
+    const next = new Set(current);
+    for (const key of current) {
+      const [x, y] = key.split(',').map(Number);
+      for (const [dx, dy] of VECS) {
+        const k = `${x+dx},${y+dy}`;
+        if (!dayMap.has(k)) dayMap.set(k, d);
+        next.add(k);
+      }
+    }
+    current = next;
+    states.push(new Set(current));
+  }
+  const maxDay = 30;
+
+  // heatmap color: same as sim page — age-relative
+  // newest (age=0) = bright yellow-green → cyan → deep navy (oldest)
+  function heatColor(bd, displayDay) {
+    const age = displayDay - bd;
+    const t = Math.min(age / Math.max(displayDay, 1), 1); // 0=newest, 1=oldest
+    let r, g, b;
+    if (t < 0.33) {
+      const s = t / 0.33;
+      r = Math.round(80  - s * 80);
+      g = Math.round(220 - s * 80);
+      b = Math.round(100 + s * 127);
+    } else if (t < 0.66) {
+      const s = (t - 0.33) / 0.33;
+      r = 0;
+      g = Math.round(140 - s * 100);
+      b = Math.round(227 - s * 40);
+    } else {
+      const s = (t - 0.66) / 0.34;
+      r = Math.round(s * 20);
+      g = Math.round(40 - s * 30);
+      b = Math.round(187 - s * 80);
+    }
+    return [r, g, b];
+  }
+
+  let displayDay = 0;
+  let lastAdvance = performance.now();
+  const ADVANCE_MS = 700;
+
+  function draw(ts) {
+    ctx.clearRect(0, 0, W, H);
+
+    if (ts - lastAdvance > ADVANCE_MS) {
+      displayDay = (displayDay + 1) % (maxDay + 1);
+      if (displayDay === 0) {
+        // pick a new random pattern on loop
+        const shuffled2 = possible.sort(() => Math.random() - 0.5);
+        const w2 = 3 + Math.floor(Math.random() * 5);
+        VECS.length = 0;
+        VECS.push([0,0], ...shuffled2.slice(0, w2));
+        dayMap.clear();
+        dayMap.set(`${CX},${CY}`, 0);
+        let cur = new Set([`${CX},${CY}`]);
+        states.length = 0;
+        states.push(new Set(cur));
+        for (let d = 1; d <= 30; d++) {
+          const nxt = new Set(cur);
+          for (const key of cur) {
+            const [x, y] = key.split(',').map(Number);
+            for (const [ddx, ddy] of VECS) {
+              const k = `${x+ddx},${y+ddy}`;
+              if (!dayMap.has(k)) dayMap.set(k, d);
+              nxt.add(k);
+            }
+          }
+          cur = nxt;
+          states.push(new Set(cur));
+        }
+      }
+      lastAdvance = ts;
+    }
+
+    const state = states[Math.min(displayDay, states.length - 1)];
+
+    for (const key of state) {
+      const [gx, gy] = key.split(',').map(Number);
+      const px = (gx - CX) * CELL + W / 2;
+      const py = (gy - CY) * CELL + H / 2;
+      if (px < -CELL * 2 || px > W + CELL * 2 || py < -CELL * 2 || py > H + CELL * 2) continue;
+
+      const bd = dayMap.get(key) ?? 0;
+      const isNew = bd === displayDay;
+      const [r, g, b] = heatColor(bd, displayDay);
+
+      // subtle: base alpha low, new cells slightly more visible
+      const alpha = isNew ? 0.28 : 0.1;
+      const pad = 1;
+
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.fillRect(px - CELL/2 + pad, py - CELL/2 + pad, CELL - pad*2, CELL - pad*2);
+    }
+
+    aboutAnimId = requestAnimationFrame(draw);
+  }
+  aboutAnimId = requestAnimationFrame(draw);
+}
+
+function stopAboutCanvas() {
+  if (aboutAnimId) { cancelAnimationFrame(aboutAnimId); aboutAnimId = null; }
+  if (aboutMouseRaf) { cancelAnimationFrame(aboutMouseRaf); aboutMouseRaf = null; }
+  document.querySelectorAll('.about-sym').forEach(s => s.style.transform = '');
+  aboutCurrentDx = 0; aboutCurrentDy = 0; aboutTargetDx = 0; aboutTargetDy = 0;
 }
 
 // ── Keyboard ───────────────────────────────────────────────────────────────
