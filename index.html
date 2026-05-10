@@ -519,30 +519,22 @@
     letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-tertiary); margin-bottom: 0.75rem;
   }
-  .about-credit-names { display: flex; gap: 2rem; }
-  .about-credit-person { display: flex; flex-direction: column; gap: 4px; }
+  .about-credit-names { display: flex; flex-direction: column; gap: 1.25rem; }
+  .about-credit-person { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
   .about-credit-name {
     font-family: var(--mono); font-size: 0.7rem;
     color: var(--text-secondary); letter-spacing: 0.02em;
   }
   .about-sig {
-    width: 110px; height: 32px;
-    color: var(--accent); opacity: 0.5;
+    width: 280px; height: 80px;
+    color: var(--text-primary); opacity: 1;
+    display: block; margin-left: -4px;
   }
-  .about-sig svg { width: 100%; height: 100%; }
-  .sig-path {
-    stroke-dasharray: 200;
-    stroke-dashoffset: 200;
-    animation: sig-draw 1.8s cubic-bezier(0.4,0,0.2,1) forwards;
-    animation-play-state: paused;
-  }
-  .about-page.open .sig-path {
-    animation-play-state: running;
-  }
-  #sig2 .sig-path { animation-delay: 0.4s; }
-  @keyframes sig-draw {
-    to { stroke-dashoffset: 0; }
-  }
+  #sig1 { width: 280px; height: 80px; margin-left: -4px; }
+  #sig2 { width: 280px; height: 80px; margin-left: -4px; }
+  .about-sig svg { width: 100%; height: 100%; overflow: visible; }
+  .about-sig svg path { stroke-dashoffset: var(--dash-len, 800); stroke-dasharray: var(--dash-len, 800); }
+  .about-sig svg circle { opacity: 0; }
 
   /* pulsating backdrop */
   .about-backdrop {
@@ -805,16 +797,17 @@
         <div class="about-credit-names">
           <div class="about-credit-person">
             <div class="about-sig" id="sig1">
-              <svg viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 28 Q18 8 28 20 Q38 32 48 16 Q58 4 68 18 Q78 30 88 14 Q98 2 112 22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" class="sig-path"/>
+              <svg viewBox="400 15 800 460" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%">
+                <path id="sigpath1a" d="M70 430 C110 320, 170 220, 250 130 C290 90, 250 110, 190 145 C110 190, 80 230, 120 265 C170 305, 245 345, 280 410 C295 445, 315 430, 325 380 C350 280, 395 170, 470 105 C505 75, 470 125, 430 180 C385 245, 360 285, 405 325 C450 365, 475 405, 495 435 C515 455, 535 430, 545 370 C565 235, 595 120, 650 40 C665 20, 670 45, 665 120 C660 245, 650 360, 620 430 C645 375, 690 300, 760 190 C820 95, 900 -10, 860 5 C825 25, 780 95, 735 175 C690 255, 655 320, 655 345 C655 365, 690 370, 760 370 L815 370 L855 395" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
               </svg>
             </div>
             <div class="about-credit-name">Michael Karabinosh</div>
           </div>
           <div class="about-credit-person">
             <div class="about-sig" id="sig2">
-              <svg viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 20 Q20 6 32 22 Q44 36 54 18 Q62 6 72 20 Q82 32 96 16 Q104 8 112 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" class="sig-path"/>
+              <svg viewBox="4300 800 4000 3200" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%;transform:scaleY(-1);transform-origin:center">
+                <path id="sigpath2a" d="M4651 3652 l-83 -37 -59 -121 c-63 -128 -70 -154 -41 -154 12 0 35 36 77 116 l60 115 83 41 c57 29 82 46 80 57 -5 25 -28 22 -117 -17z" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <path id="sigpath2b" d="M2539 3426 c-157 -64 -411 -264 -605 -477 -137 -149 -311 -379 -297 -393 3 -3 -1 -14 -10 -24 -10 -10 -14 -22 -10 -27 5 -4 2 -5 -4 -1 -8 4 -13 1 -13 -8 0 -9 -4 -16 -10 -16 -13 0 -13 17 0 25 6 4 8 10 5 15 -3 5 -1 11 5 15 6 4 8 11 5 16 -4 5 2 6 12 2 10 -3 15 -3 11 1 -3 4 4 31 17 59 12 29 48 127 79 218 49 144 55 170 46 195 -21 53 -66 59 -111 15 -41 -42 -41 -101 1 -142 l30 -30 -71 -197 c-92 -253 -105 -282 -175 -389 -75 -114 -145 -235 -201 -348 -29 -57 -67 -113 -105 -154 -33 -35 -67 -78 -75 -97 -15 -31 -15 -35 1 -53 18 -20 17 -24 -34 -138 -71 -159 -227 -542 -256 -627 -25 -72 -24 -86 5 -86 11 0 33 28 64 82 53 96 341 673 351 704 6 18 19 22 119 33 176 19 350 83 573 211 139 80 398 246 414 265 20 24 25 18 26 -29 4 -159 166 -180 364 -46 105 71 356 338 431 458 8 12 17 22 22 22 4 0 5 -5 1 -11 -16 -27 -23 -86 -13 -122 12 -47 57 -77 114 -77 131 0 317 108 629 364 98 80 181 146 184 146 4 0 12 -10 17 -22 17 -39 52 -50 145 -45 75 5 189 34 272 71 15 7 17 4 12 -20 -8 -42 15 -68 58 -67 45 1 86 23 148 78 67 60 97 78 114 72 8 -3 25 -39 37 -79 25 -87 49 -123 85 -132 46 -12 52 10 12 47 -24 22 -40 48 -48 78 -18 71 -31 98 -58 120 -24 19 -25 22 -13 52 24 57 25 86 5 108 -39 43 -122 1 -239 -122 -49 -52 -74 -69 -140 -96 -108 -44 -197 -66 -272 -67 -70 -1 -84 8 -85 53 -1 17 -7 36 -15 42 -15 13 -13 14 -249 -182 -249 -207 -412 -311 -543 -345 -105 -26 -144 10 -122 112 29 127 156 320 316 480 89 89 103 114 64 114 -64 0 -131 -68 -266 -270 -115 -172 -356 -472 -475 -590 -134 -133 -264 -212 -351 -213 -42 -1 -53 3 -73 27 -19 22 -24 39 -24 84 l0 57 81 70 c147 127 365 367 607 669 137 171 169 226 156 265 -14 39 -73 40 -139 2 -235 -136 -606 -608 -720 -916 -21 -57 -27 -63 -126 -133 -226 -160 -512 -320 -680 -382 -90 -33 -233 -63 -283 -58 l-34 3 67 150 66 150 350 335 c193 184 434 412 536 506 242 225 383 390 445 519 30 64 30 90 -1 120 -31 32 -81 32 -156 1z" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
               </svg>
             </div>
             <div class="about-credit-name">Rewa Okubo</div>
@@ -2154,6 +2147,68 @@ function simRender() {
 function openAbout() {
   document.getElementById('aboutPage').classList.add('open');
   startAboutCanvas();
+  setTimeout(startSigAnimation, 400);
+}
+
+function startSigAnimation() {
+  const sig1Paths = ['sigpath1a'];
+  const sig2Paths = ['sigpath2a','sigpath2b'];
+  const sig2Dots  = [];
+
+  function animateSig(pathIds, dotIds, totalDur, startDelay) {
+    const paths = pathIds.map(id => document.getElementById(id)).filter(Boolean);
+    const dots  = (dotIds||[]).map(id => document.getElementById(id)).filter(Boolean);
+
+    // measure lengths
+    paths.forEach(p => {
+      let len = 2000;
+      try { if (p.getTotalLength) len = Math.ceil(p.getTotalLength()); } catch(e) {}
+      p._sigLen = len;
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.style.transition = 'none';
+    });
+    dots.forEach(d => { d.style.opacity = '0'; d.style.transition = 'none'; });
+
+    function loop() {
+      if (!document.getElementById('aboutPage').classList.contains('open')) return;
+
+      // reset all to hidden
+      paths.forEach(p => {
+        p.style.transition = 'none';
+        p.style.strokeDashoffset = p._sigLen;
+      });
+      dots.forEach(d => { d.style.transition = 'none'; d.style.opacity = '0'; });
+
+      // force reflow so reset takes effect
+      paths[0] && paths[0].getBoundingClientRect();
+
+      const segDur = totalDur / paths.length;
+      paths.forEach((p, i) => {
+        setTimeout(() => {
+          if (!document.getElementById('aboutPage').classList.contains('open')) return;
+          p.style.transition = `stroke-dashoffset ${segDur * 0.92}ms cubic-bezier(0.4,0,0.2,1)`;
+          p.style.strokeDashoffset = '0';
+        }, i * segDur);
+      });
+
+      dots.forEach((d, i) => {
+        setTimeout(() => {
+          if (!document.getElementById('aboutPage').classList.contains('open')) return;
+          d.style.transition = 'opacity 0.35s';
+          d.style.opacity = '1';
+        }, totalDur * 0.82 + i * 180);
+      });
+
+      // schedule next loop: draw time + pause
+      setTimeout(loop, totalDur + 2200);
+    }
+
+    setTimeout(loop, startDelay);
+  }
+
+  animateSig(sig1Paths, [], 2400, 0);
+  animateSig(sig2Paths, sig2Dots, 1800, 700);
 }
 function closeAbout() {
   document.getElementById('aboutPage').classList.remove('open');
